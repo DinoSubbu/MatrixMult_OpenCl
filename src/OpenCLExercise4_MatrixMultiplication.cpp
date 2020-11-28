@@ -249,22 +249,32 @@ int main(int argc, char** argv) {
 		cl::Event writeBufferATime;
 		cl::Event writeBufferBTime;
 
-		if(impl==4):
+		if(impl==4){
 			queue.enqueueWriteImage(imgA, true, origin, region,(countAX_BY*sizeof(float)), 0, h_inputA.data(), NULL, &writeBufferATime);
 			queue.enqueueWriteImage(imgB, true, origin, region,(countBX*sizeof(float)), 0, h_inputB.data(), NULL, &writeBufferBTime);
-		else:
+			}
+		else{
 			queue.enqueueWriteBuffer(d_inputA, true, 0, size, h_inputA.data(),NULL,&writeBufferATime);
 			queue.enqueueWriteBuffer(d_inputB, true, 0, size, h_inputB.data(),NULL,&writeBufferBTime);
+			}
 
 		// Launch kernel on the device
 		//TODO
 		cl::Event kernelTime;
-		matrixMulKernel.setArg<cl::Buffer>(0, d_inputA);
-		matrixMulKernel.setArg<cl::Buffer>(1, d_inputB);
+		if(impl==3){
+			matrixMulKernel.setArg<cl::Image2D>(0, d_inputA);
+			matrixMulKernel.setArg<cl::Image2D>(1, d_inputB);
+			}
+		else{
+			matrixMulKernel.setArg<cl::Buffer>(0, d_inputA);
+			matrixMulKernel.setArg<cl::Buffer>(1, d_inputB);
+			}
 		matrixMulKernel.setArg<cl::Buffer>(2, d_output);
-		matrixMulKernel.setArg<cl::Buffer>(3, countAX_BY);
-		if(impl==3):
-			matrixMulKernel.setArg(4, cl::Local(2*wgSize*wgSize*sizeof(float)));
+		matrixMulKernel.setArg<cl::Buffer>(3, (int)countAX_BY);
+		if(impl==3){
+			matrixMulKernel.setArg(4, __local(2*wgSize*wgSize*sizeof(float)));
+			}
+		
 		queue.enqueueNDRangeKernel(matrixMulKernel, 0,cl::NDRange(countAY, countBX),cl::NDRange(wgSize, wgSize), NULL, &kernelTime);
 
 		// Copy output data back to host
@@ -280,6 +290,11 @@ int main(int argc, char** argv) {
 		Core::TimeSpan gpuTime = writeBufferATime + writeBufferBTime + kernelTime + readBufferTime;
 		printPerformance(matrixMulKernel, gpuTime, copyTime, atlasTime);
 
+		std::cout << "GPU Time: " << gpuTime << std::endl;
+		std::cout << "CPU Time: " << cpuTime << std::endl;
+		std::cout << "Speedup: " << (double)cpuTime.getseconds()/ gpuTime.getseconds() << std::endl;
+		std::cout << "CPU Time: " << atlasTime << std::endl;
+		
 		// Check whether results are correct
 		if (!compareMatrices(h_outputCCpu, "CPU", h_outputCGpu, "GPU", countCX, countCY))
 			return 1;

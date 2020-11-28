@@ -6,7 +6,7 @@ __kernel void matrixMulKernel1(__global const float* d_inputA, __global const fl
 	int j = get_global_id(0);
 	int i = get_global_id(1);
 
-	unsigned long countAY = get_global_size(0);
+	//unsigned long countAY = get_global_size(0);
 	unsigned long countBX = get_global_size(1);
 
 	float sum = 0;
@@ -26,7 +26,7 @@ __kernel void matrixMulKernel2(__global const float* d_inputA, __global const fl
 	int j = get_global_id(0);
 	int i = get_global_id(1);
 
-	unsigned long countAX_BY = get_global_size(0);
+	//unsigned long countAY = get_global_size(0);
 	unsigned long countBX = get_global_size(1);
 
 	__local float l_A[16][16];
@@ -55,7 +55,7 @@ __kernel void matrixMulKernel3(__global const float* d_inputA, __global const fl
 	int j = get_global_id(0);
 	int i = get_global_id(1);
 
-	unsigned long countAX_BY = get_global_size(0);
+	//unsigned long countAY = get_global_size(0);
 	unsigned long countBX = get_global_size(1);
 
 	__local float l_A = localMem;
@@ -84,7 +84,7 @@ __kernel void matrixMulKernel4(__read_only image2d_t d_inputA, __read_only image
 	int j = get_global_id(0);
 	int i = get_global_id(1);
 
-	unsigned long countAY = get_global_size(0);
+	//unsigned long countAY = get_global_size(0);
 	unsigned long countBX = get_global_size(1);
 
 	float sum = 0;
